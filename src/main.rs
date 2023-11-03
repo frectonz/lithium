@@ -1,7 +1,7 @@
 use std::io::{stdout, Stdout};
 
 use anyhow::{Context, Result};
-use battery::{Battery, Manager};
+use battery::Battery;
 use crossterm::{
     event::{self, Event, KeyCode},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
@@ -9,7 +9,7 @@ use crossterm::{
 };
 use ratatui::{
     prelude::*,
-    widgets::{Block, Borders, Gauge, Paragraph},
+    widgets::{Block, Borders, Gauge},
     Terminal,
 };
 
@@ -21,7 +21,6 @@ fn main() -> Result<()> {
 }
 
 struct App {
-    manager: Manager,
     battery: Battery,
     should_quit: bool,
     terminal: Terminal<CrosstermBackend<Stdout>>,
@@ -40,7 +39,6 @@ impl App {
         Ok(Self {
             terminal,
             battery,
-            manager,
             should_quit: false,
         })
     }
@@ -74,7 +72,10 @@ impl App {
                     .block(Block::default().borders(Borders::ALL))
                     .gauge_style(
                         Style::default()
-                            .fg(Color::White)
+                            .fg(match self.battery.state() {
+                                battery::State::Charging => Color::Green,
+                                _ => Color::White,
+                            })
                             .bg(Color::Black)
                             .add_modifier(Modifier::ITALIC),
                     )
@@ -85,7 +86,7 @@ impl App {
 
             self.handle_events()?;
 
-            self.manager.refresh(&mut self.battery)?;
+            self.battery.refresh()?;
         }
 
         Ok(())
