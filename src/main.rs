@@ -9,7 +9,7 @@ use crossterm::{
 };
 use ratatui::{
     prelude::*,
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, Gauge, Paragraph},
     Terminal,
 };
 
@@ -66,16 +66,26 @@ impl App {
     fn run(&mut self) -> Result<()> {
         while !self.should_quit {
             self.terminal.draw(|frame| {
-                let percent = self.battery.state_of_charge().value * 100.;
-                let percent = percent.to_string();
+                let percent = (self.battery.state_of_charge().value * 100.) as u16;
 
-                let rect = centered_rect(frame.size(), percent.len() as u16, 1);
-                frame.render_widget(Paragraph::new(percent), rect);
+                let rect = centered_rect(frame.size(), 50, 30);
+
+                let bar = Gauge::default()
+                    .block(Block::default().borders(Borders::ALL))
+                    .gauge_style(
+                        Style::default()
+                            .fg(Color::White)
+                            .bg(Color::Black)
+                            .add_modifier(Modifier::ITALIC),
+                    )
+                    .percent(percent);
+
+                frame.render_widget(bar, rect);
             })?;
 
             self.handle_events()?;
 
-            // self.manager.refresh(&mut self.battery)?;
+            self.manager.refresh(&mut self.battery)?;
         }
 
         Ok(())
