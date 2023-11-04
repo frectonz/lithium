@@ -4,7 +4,10 @@ use anyhow::{Context, Result};
 use battery::Battery;
 use crossterm::{
     event::{self, Event, KeyCode},
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    terminal::{
+        disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen,
+        LeaveAlternateScreen,
+    },
     ExecutableCommand,
 };
 use ratatui::{
@@ -30,6 +33,7 @@ impl App {
     fn new() -> Result<Self> {
         enable_raw_mode()?;
         stdout().execute(EnterAlternateScreen)?;
+        stdout().execute(Clear(ClearType::FromCursorUp))?;
 
         let terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
 
