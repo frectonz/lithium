@@ -72,14 +72,20 @@ impl App {
 
                 let rect = centered_rect(frame.size(), 50, 30);
 
+                let color = match self.battery.state() {
+                    battery::State::Charging => Color::Blue,
+                    _ => Color::White,
+                };
+
                 let bar = Gauge::default()
-                    .block(Block::default().borders(Borders::ALL))
+                    .block(
+                        Block::default()
+                            .borders(Borders::ALL)
+                            .style(Style::default().fg(color)),
+                    )
                     .gauge_style(
                         Style::default()
-                            .fg(match self.battery.state() {
-                                battery::State::Charging => Color::Green,
-                                _ => Color::White,
-                            })
+                            .fg(color)
                             .bg(Color::Black)
                             .add_modifier(Modifier::ITALIC),
                     )
